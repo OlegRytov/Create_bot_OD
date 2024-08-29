@@ -51,9 +51,9 @@ async def detection(update, context):
     test_dict['weights'] = 'yolov5x.pt'     # Самые сильные веса yolov5x.pt, вы также можете загрузить версии: yolov5n.pt, yolov5s.pt, yolov5m.pt, yolov5l.pt (в порядке возрастания)
 
     test_dict['source'] = 'images'          # папка, в которую загружаются присланные в бота изображения
-    test_dict['conf'] = 0.99              # порог распознавания
-    test_dict['iou'] = 0.99              # пересечения на объединение
-    # test_dict['classes'] = '50 39'        # классы, которые будут распознаны
+    test_dict['conf'] = 0.85              # порог распознавания
+    # test_dict['iou'] = 0.99              # пересечения на объединение
+    test_dict['classes'] = 0 #'50 39'        # классы, которые будут распознаны
 
 
     # вызов функции detect из класса TerraYolo)
