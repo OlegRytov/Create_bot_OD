@@ -23,9 +23,11 @@ async def start(update, context):
 # функция для работы с текстом
 async def help(update, context):
     await update.message.reply_text(update)
-
-
-
+    
+# функция команды faile
+async def faile(update, context):
+    await update.message.reply_text('Пришлите фото в сжатом виде')
+    
 # функция обработки изображения
 async def detection(update, context):
     # удаляем папку images с предыдущим загруженным изображением и папку runs с результатом предыдущего распознавания
@@ -79,6 +81,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     # добавляем обработчик изображений, которые загружаются в Telegram в СЖАТОМ формате
     # (выбирается при попытке прикрепления изображения к сообщению)
+    application.add_handler(MessageHandler(filters.Document.ALL, faile))
     application.add_handler(MessageHandler(filters.PHOTO, detection, block=False))
     application.add_handler(MessageHandler(filters.TEXT, help))
 
