@@ -11,8 +11,6 @@ load_dotenv()
 # загружаем токен бота
 TOKEN =  os.environ.get("TOKEN") # ВАЖНО !!!!!
 
-classes_value = None
-
 # инициализируем класс YOLO
 WORK_DIR = r'C:\Users\Virus\Downloads\Create_bot_OD'
 os.makedirs(WORK_DIR, exist_ok=True)
