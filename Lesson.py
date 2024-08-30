@@ -1,4 +1,5 @@
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
+from telegram import KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from dotenv import load_dotenv
 import os
 import shutil
@@ -10,6 +11,8 @@ load_dotenv()
 # загружаем токен бота
 TOKEN =  os.environ.get("TOKEN") # ВАЖНО !!!!!
 
+classes_value = None
+
 # инициализируем класс YOLO
 WORK_DIR = r'C:\Users\Virus\Downloads\Create_bot_OD'
 os.makedirs(WORK_DIR, exist_ok=True)
@@ -18,7 +21,26 @@ yolov5 = TerraYoloV5(work_dir=WORK_DIR)
 
 # функция команды /start
 async def start(update, context):
-    await update.message.reply_text('Пришлите фото для распознавания объектов')
+        # Создаем обычные кнопки
+        reply_buttons = [[KeyboardButton("Отправить изображение")]]
+    
+        reply_keyboard = ReplyKeyboardMarkup(reply_buttons, resize_keyboard=True, one_time_keyboard=True)
+
+        await update.message.reply_text('Пришлите фото для распознавания объектов', reply_markup=reply_keyboard)
+
+async def button_handler(update, context):
+    query = update.callback_query
+    await query.answer()  # Отправляем подтверждение нажатия кнопки
+
+    # Обрабатываем выбор пользователя
+    selected_option, image_name = query.data.split(":")
+
+    if selected_option == 'people':
+       classes = '0' # Распознать людей
+    elif selected_option == 'All':
+       classes = None  # Распознать все
+        
+#    await update.message.reply_text('Пришлите фото для распознавания объектов')
 
 # функция для работы с текстом
 async def help(update, context):
@@ -47,6 +69,15 @@ async def detection(update, context):
     image_path = os.path.join('images', image_name)
     # скачиваем файл с сервера Telegram в папку images
     await new_file.download_to_drive(image_path)
+    
+    # Предложим пользователю выбрать тип распознаваемых объектов
+    inline_buttons = [
+        [InlineKeyboardButton("Распознать людей", callback_data=f"people:{image_name}")],
+        [InlineKeyboardButton("Распознать все", callback_data=f"All:{image_name}")]
+    ]
+    inline_keyboard = InlineKeyboardMarkup(inline_buttons)
+    await update.message.reply_text("Выберите, какие объекты распознавать на изображении:", reply_markup=inline_keyboard)
+   
 
     # создаем словарь с параметрами
     test_dict = dict()
@@ -55,7 +86,7 @@ async def detection(update, context):
     test_dict['source'] = 'images'          # папка, в которую загружаются присланные в бота изображения
     test_dict['conf'] = 0.85              # порог распознавания
     # test_dict['iou'] = 0.99              # пересечения на объединение
-    test_dict['classes'] = 0 #'50 39'        # классы, которые будут распознаны
+    # test_dict['classes'] = '50 39'        # классы, которые будут распознаны
 
 
     # вызов функции detect из класса TerraYolo)
@@ -84,6 +115,7 @@ def main():
     application.add_handler(MessageHandler(filters.Document.ALL, faile))
     application.add_handler(MessageHandler(filters.PHOTO, detection, block=False))
     application.add_handler(MessageHandler(filters.TEXT, help))
+    application.add_handler(CallbackQueryHandler(button_handler))  # Обработчик для inline-кнопок
 
     application.run_polling() # запускаем бота (остановка CTRL + C)
 
